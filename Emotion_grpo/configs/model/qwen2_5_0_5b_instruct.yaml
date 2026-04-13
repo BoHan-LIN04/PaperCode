@@ -1,0 +1,5 @@
+verl:
+  actor_rollout_ref:
+    model:
+      path: Qwen/Qwen2.5-0.5B-Instruct
+

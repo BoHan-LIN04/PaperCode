@@ -1,0 +1,14 @@
+verl:
+  data:
+    train_batch_size: 1
+    val_batch_size: 1
+  actor_rollout_ref:
+    actor:
+      ppo_mini_batch_size: 1
+      ppo_micro_batch_size_per_gpu: 1
+    rollout:
+      n: 4
+  trainer:
+    nnodes: 1
+    n_gpus_per_node: 1
+

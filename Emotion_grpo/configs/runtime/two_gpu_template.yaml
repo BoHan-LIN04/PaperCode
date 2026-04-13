@@ -1,0 +1,15 @@
+verl:
+  data:
+    train_batch_size: 2
+    val_batch_size: 2
+  actor_rollout_ref:
+    actor:
+      ppo_mini_batch_size: 2
+      ppo_micro_batch_size_per_gpu: 1
+    rollout:
+      n: 4
+      tensor_model_parallel_size: 1
+  trainer:
+    nnodes: 1
+    n_gpus_per_node: 2
+

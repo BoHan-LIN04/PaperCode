@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Logs
+*.log
+
+# Model / cache / artifacts
+artifacts/
+checkpoints/
+outputs/
+cache/
+*.mmap
+*.pt
+*.bin
+*.ckpt
+
+# Large data
+*.jsonl
+*.npy
+*.npz

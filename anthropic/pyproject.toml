@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anthropic-emotions-repro"
+version = "0.2.0"
+description = "Minimal Qwen3 pipeline for synthetic story generation and emotion vector extraction"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "PyYAML>=6.0",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "scikit-learn>=1.5",
+  "openai>=1.51.0",
+  "transformers>=5.1.0",
+  "accelerate>=1.0.0",
+  "torch>=2.5.0",
+  "pyarrow>=15.0.0",
+  "protobuf>=4.25",
+  "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+]
+tracking = [
+  "wandb>=0.18",
+]
+
+[project.scripts]
+anthropic-emotions-repro = "anthropic_emotions_repro.cli:main"
+prepare_topic_bank = "anthropic_emotions_repro.cli:prepare_topic_bank_main"
+prepare_prompt_templates = "anthropic_emotions_repro.cli:prepare_prompt_templates_main"
+generate_emotion_corpus = "anthropic_emotions_repro.cli:generate_emotion_corpus_main"
+extract_residuals = "anthropic_emotions_repro.cli:extract_residuals_main"
+build_emotion_vectors = "anthropic_emotions_repro.cli:build_emotion_vectors_main"
+build_report = "anthropic_emotions_repro.cli:build_report_main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

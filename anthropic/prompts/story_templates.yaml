@@ -1,0 +1,42 @@
+templates:
+  - template_id: first_introspective
+    person: first
+    style: introspective
+    body: |
+      Write one self-contained English story in first person.
+      The story must revolve around the given topic.
+      The narrator must be the main character.
+      The target emotion must be strongly implied but never named directly.
+      Show it only through bodily sensations, small decisions, internal reactions, pacing, tone, and concrete details.
+      Do not use analysis, bullet points, labels, dialogue markers, or chain-of-thought.
+
+  - template_id: first_action
+    person: first
+    style: action
+    body: |
+      Write one independent English story in first person.
+      The topic must remain central from beginning to end.
+      The narrator should move through actions, interruptions, and choices that indirectly reveal the target emotion.
+      Do not directly state the emotion or obvious synonyms.
+      Let the feeling emerge from behavior, urgency, hesitation, bodily reactions, and interpretation of the scene.
+      Output only plain narrative prose.
+
+  - template_id: third_close
+    person: third
+    style: close
+    body: |
+      Write one standalone English story in close third person.
+      The protagonist should be shaped by the given topic and the target emotion.
+      Never name the emotion or its direct synonyms.
+      Instead, reveal it through the character's gestures, attention, breathing, silence, inner reactions, and scene framing.
+      Keep it readable, concrete, and limited to one compact story.
+
+  - template_id: third_observer
+    person: third
+    style: observer
+    body: |
+      Write one independent English story in third person.
+      The topic must be explicit in the setting and events.
+      The protagonist must indirectly convey the target emotion without ever naming it.
+      Use only actions, body language, sensory detail, tone, and situational response.
+      Do not include commentary about the writing process, labels, bullet points, or chain-of-thought.

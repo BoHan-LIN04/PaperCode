@@ -1,0 +1,63 @@
+project_name: anthropic-emotions-repro
+artifact_root: null
+model_name: Qwen/Qwen3-0.6B
+language: en
+wandb_mode: offline
+seed: 7
+enable_thinking_quant: false
+use_stub_data: true
+
+main_layer: 8
+layer_sweep: [4, 6, 8, 10]
+generation_defaults:
+  temperature: 0.7
+  top_p: 0.8
+  top_k: 20
+  max_new_tokens: 96
+  do_sample: true
+
+runtime:
+  dtype: bfloat16
+  attn_impl: sdpa
+  generation_batch_size: 2
+  extraction_batch_size: 2
+  judge_batch_size: 2
+  max_length: 192
+
+openrouter:
+  enabled: false
+  base_url: https://openrouter.ai/api/v1
+  api_key_env: OPENROUTER_API_KEY
+  generation_model: openai/gpt-4o-mini-2024-07-18
+  judge_model: openai/gpt-4o-mini-2024-07-18
+  referer: https://localhost
+  title: anthropic-emotions-repro
+  timeout_seconds: 120.0
+
+topic_bank:
+  source_path: datasets/topics_100.yaml
+  topic_count: 8
+  neutral_stories_per_topic: 2
+
+story_generation:
+  template_path: prompts/story_templates.yaml
+  constraints_path: datasets/emotion_constraints.yaml
+  emotion_count: 12
+  stories_per_topic: 2
+  max_retries: 2
+  min_story_chars: 80
+  qc_emotions: 4
+  qc_samples_per_emotion: 2
+  forbid_direct_terms: true
+  recovery_attempts: 1
+  max_duplicate_fraction: 0.50
+  max_fallback_fraction: 1.00
+  generation_backend: stub
+  judge_backend: stub
+
+vector_extraction:
+  token_pool_start: 8
+  neutral_pca_variance: 0.5
+
+smoke:
+  enabled: true

@@ -1,0 +1,26 @@
+defaults:
+  base: base
+  model: qwen2_5_0_5b_instruct
+  runtime: single_gpu
+
+experiment_name: smoke_test
+
+reward:
+  provider_cls: emotion_grpo.rewards.fixed_provider.FixedIntrinsicRewardProvider
+  provider_kwargs:
+    __replace__: true
+    default_value: 0.25
+
+verl:
+  data:
+    max_prompt_length: 256
+    max_response_length: 128
+  actor_rollout_ref:
+    rollout:
+      n: 2
+      max_num_seqs: 16
+      max_num_batched_tokens: 384
+  trainer:
+    project_name: Emotion_grpo
+    experiment_name: smoke_test
+    default_local_dir: outputs/smoke_test

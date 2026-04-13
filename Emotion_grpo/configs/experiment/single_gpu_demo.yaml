@@ -1,0 +1,13 @@
+defaults:
+  base: base
+  model: qwen2_5_0_5b_instruct
+  runtime: single_gpu
+
+experiment_name: single_gpu_demo
+
+verl:
+  trainer:
+    project_name: Emotion_grpo
+    experiment_name: single_gpu_demo
+    default_local_dir: outputs/single_gpu_demo
+

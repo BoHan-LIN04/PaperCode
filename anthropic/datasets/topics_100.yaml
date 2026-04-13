@@ -1,0 +1,101 @@
+topics:
+  - {topic_id: 1, title: "Late rent notice", summary: "A tenant opens a final rent notice after weeks of financial strain and must decide what to do before sunset."}
+  - {topic_id: 2, title: "Scholarship interview", summary: "A student travels across the city for a scholarship interview that could change the future of the entire family."}
+  - {topic_id: 3, title: "Hospital waiting room", summary: "Someone spends hours in a hospital waiting room while news about a loved one remains uncertain."}
+  - {topic_id: 4, title: "Broken family heirloom", summary: "A treasured family object breaks just before an important gathering, forcing a difficult choice about honesty and repair."}
+  - {topic_id: 5, title: "Promotion announcement", summary: "An employee sits through a company meeting where a long-awaited promotion is finally announced."}
+  - {topic_id: 6, title: "Lost child at the fair", summary: "During a crowded neighborhood fair, an adult realizes a child has wandered out of sight."}
+  - {topic_id: 7, title: "Wedding toast", summary: "A person asked to give a wedding toast struggles to prepare something worthy before the reception begins."}
+  - {topic_id: 8, title: "Unexpected apology", summary: "After years of distance, a message arrives from someone who once caused deep harm."}
+  - {topic_id: 9, title: "Job rejection email", summary: "A candidate refreshes an inbox and finds a final decision after months of hope and preparation."}
+  - {topic_id: 10, title: "Storm evacuation", summary: "A family has one hour to leave home before a severe storm reaches the coast."}
+  - {topic_id: 11, title: "Train station goodbye", summary: "Two people stand on a train platform knowing this departure may change their relationship permanently."}
+  - {topic_id: 12, title: "School talent show", summary: "A young performer waits backstage at a school talent show while the auditorium fills with noise."}
+  - {topic_id: 13, title: "Missed anniversary", summary: "Someone realizes a meaningful anniversary has been forgotten until the very end of the day."}
+  - {topic_id: 14, title: "Layoff rumor", summary: "Office rumors about layoffs grow louder as a team waits for official confirmation."}
+  - {topic_id: 15, title: "Rescued stray dog", summary: "A stray dog follows a person home during heavy rain and changes the course of the evening."}
+  - {topic_id: 16, title: "Science fair sabotage", summary: "A student's carefully prepared project is damaged hours before judging begins."}
+  - {topic_id: 17, title: "First apartment", summary: "A young adult receives keys to a first apartment and enters the empty rooms alone."}
+  - {topic_id: 18, title: "Retirement speech", summary: "After decades in one workplace, a retiring employee is asked to speak in front of everyone."}
+  - {topic_id: 19, title: "Search and rescue", summary: "Volunteers comb a cold hillside at dawn looking for someone who never came back."}
+  - {topic_id: 20, title: "Museum restoration", summary: "An art restorer notices a hidden detail while working on a damaged painting."}
+  - {topic_id: 21, title: "Neighbor complaint", summary: "A tense complaint from a neighbor turns an ordinary evening into a test of restraint."}
+  - {topic_id: 22, title: "College acceptance", summary: "A sealed college letter sits unopened on a kitchen table while everyone watches."}
+  - {topic_id: 23, title: "Power outage dinner", summary: "A citywide blackout interrupts dinner and leaves a household navigating darkness together."}
+  - {topic_id: 24, title: "Deleted evidence", summary: "A person accidentally deletes the only digital copy of something urgently needed."}
+  - {topic_id: 25, title: "Court verdict", summary: "A family waits in silence for a verdict that will affect the next several years."}
+  - {topic_id: 26, title: "Childhood home sale", summary: "Siblings return to their childhood home to prepare it for sale after a parent's death."}
+  - {topic_id: 27, title: "Marathon starting line", summary: "A runner stands at the starting line after months of training and doubt."}
+  - {topic_id: 28, title: "Teacher observation", summary: "A new teacher is evaluated during a lesson that starts going wrong immediately."}
+  - {topic_id: 29, title: "Snowed-in cabin", summary: "Friends become trapped in a mountain cabin overnight as communication drops out."}
+  - {topic_id: 30, title: "Recovered diary", summary: "An old diary surfaces during a move and reveals something long misunderstood."}
+  - {topic_id: 31, title: "Airport security stop", summary: "A traveler is unexpectedly pulled aside at airport security while time runs out."}
+  - {topic_id: 32, title: "Emergency surgery consent", summary: "A relative must sign urgent medical paperwork without knowing what comes next."}
+  - {topic_id: 33, title: "Community garden theft", summary: "Months of careful work vanish from a community garden overnight."}
+  - {topic_id: 34, title: "Fire alarm at midnight", summary: "A building alarm sends residents into the hallway in the middle of the night."}
+  - {topic_id: 35, title: "Debate final round", summary: "A student reaches the final round of a debate tournament and faces the rival everyone expected."}
+  - {topic_id: 36, title: "Restaurant opening night", summary: "A chef's first opening night arrives after years of planning and borrowed money."}
+  - {topic_id: 37, title: "Online rumor", summary: "A false rumor spreads online and begins to affect someone's real life within hours."}
+  - {topic_id: 38, title: "Family reunion", summary: "Relatives gather for the first reunion in years, bringing old tensions back to the surface."}
+  - {topic_id: 39, title: "Stranded on highway", summary: "A car breaks down on a remote highway just as daylight starts to fade."}
+  - {topic_id: 40, title: "Piano recital", summary: "A performer walks toward a piano in a quiet hall knowing a mistake would feel enormous."}
+  - {topic_id: 41, title: "Recovered test results", summary: "Medical test results finally appear after a long and uncertain wait."}
+  - {topic_id: 42, title: "Adoption day", summary: "A family arrives at court for an adoption hearing that has been years in the making."}
+  - {topic_id: 43, title: "Bridge at dawn", summary: "Someone stands on a bridge at dawn, deciding whether to leave town for good."}
+  - {topic_id: 44, title: "Team project betrayal", summary: "A teammate presents shared work as if it were entirely their own."}
+  - {topic_id: 45, title: "Quiet library encounter", summary: "An unexpected encounter in a library revives a relationship thought to be over."}
+  - {topic_id: 46, title: "Small town election", summary: "Election night unfolds in a small town where every vote seems to belong to someone you know."}
+  - {topic_id: 47, title: "Missing wedding ring", summary: "A wedding ring disappears on the morning of an important family ceremony."}
+  - {topic_id: 48, title: "Mountain rescue radio", summary: "A single radio message changes the direction of a dangerous mountain rescue."}
+  - {topic_id: 49, title: "Art contest judging", summary: "A young artist waits beside a piece that feels too personal to be seen."}
+  - {topic_id: 50, title: "Courtroom testimony", summary: "A witness must testify in a packed courtroom after weeks of dread."}
+  - {topic_id: 51, title: "Cafeteria confrontation", summary: "A small confrontation in a school cafeteria escalates in front of everyone."}
+  - {topic_id: 52, title: "Startup demo day", summary: "A founder prepares to present a fragile product to a room full of skeptical investors."}
+  - {topic_id: 53, title: "Pet surgery bill", summary: "A sudden surgery estimate forces someone to choose between debt and goodbye."}
+  - {topic_id: 54, title: "Dance audition", summary: "A dancer returns to audition after an injury that once ended everything."}
+  - {topic_id: 55, title: "Shared inheritance", summary: "A will reading exposes both unfairness and long-buried expectations among siblings."}
+  - {topic_id: 56, title: "Refugee paperwork", summary: "A family carries a folder of papers between crowded offices hoping one final stamp will change everything."}
+  - {topic_id: 57, title: "Final exam hall", summary: "A student enters the final exam hall after a semester of exhaustion and sacrifice."}
+  - {topic_id: 58, title: "Neighbor's emergency call", summary: "A late-night knock asks for help with a crisis next door."}
+  - {topic_id: 59, title: "Public speaking class", summary: "An adult who hates attention is forced to give a graded speech in class."}
+  - {topic_id: 60, title: "Canceled flight overnight", summary: "An abrupt cancellation leaves travelers stranded overnight far from home."}
+  - {topic_id: 61, title: "Choir solo", summary: "A singer unexpectedly becomes responsible for a solo performance during rehearsal."}
+  - {topic_id: 62, title: "PhD defense", summary: "Years of research come down to a single defense in front of a committee."}
+  - {topic_id: 63, title: "Flooded basement", summary: "A family discovers rising water in the basement where meaningful possessions are stored."}
+  - {topic_id: 64, title: "Resignation letter", summary: "Someone opens a blank document and tries to write a resignation letter after one final incident."}
+  - {topic_id: 65, title: "Night shift mistake", summary: "A worker on the night shift realizes a small mistake could have huge consequences by morning."}
+  - {topic_id: 66, title: "Phone call from prison", summary: "A phone call arrives from someone who has not been heard from in years."}
+  - {topic_id: 67, title: "School pickup delay", summary: "Traffic and bad weather threaten to make someone dangerously late for school pickup."}
+  - {topic_id: 68, title: "Documentary screening", summary: "A filmmaker watches an audience react to a documentary built from private pain."}
+  - {topic_id: 69, title: "Camping in silence", summary: "Two friends share a campsite after a conflict neither knows how to address."}
+  - {topic_id: 70, title: "Homecoming game", summary: "A teenager steps onto the field during a homecoming game with the whole town watching."}
+  - {topic_id: 71, title: "Bank fraud alert", summary: "A sudden fraud alert empties an account just before bills are due."}
+  - {topic_id: 72, title: "Late diagnosis", summary: "A delayed diagnosis explains years of difficulty and rearranges a person's understanding of the past."}
+  - {topic_id: 73, title: "Last family recipe", summary: "The only written copy of a family recipe is discovered stained and half unreadable."}
+  - {topic_id: 74, title: "Choir reunion", summary: "Former choir members reunite to sing at a memorial service for their old conductor."}
+  - {topic_id: 75, title: "Bus stop in winter", summary: "A stranger at a freezing bus stop changes the course of someone else's day."}
+  - {topic_id: 76, title: "Boat race final", summary: "A rowing team enters a final race after an argument that nearly split the team apart."}
+  - {topic_id: 77, title: "Child's report card", summary: "A parent unfolds a report card carrying hopes, fear, and too many assumptions."}
+  - {topic_id: 78, title: "Volunteer hotline", summary: "A volunteer takes a difficult hotline call that lingers long after the shift ends."}
+  - {topic_id: 79, title: "Neighborhood eviction protest", summary: "Residents gather to stop an eviction as police vehicles begin to arrive."}
+  - {topic_id: 80, title: "Chess clock ticking", summary: "A player faces a critical move while the chess clock drains away."}
+  - {topic_id: 81, title: "Art school portfolio", summary: "A portfolio review forces an applicant to defend work that feels inseparable from private history."}
+  - {topic_id: 82, title: "Rehearsal injury", summary: "A performer is injured during rehearsal days before opening night."}
+  - {topic_id: 83, title: "Old voicemail", summary: "An old voicemail is discovered at exactly the wrong time to be forgotten."}
+  - {topic_id: 84, title: "Treehouse promise", summary: "Returning to an old treehouse reopens a promise made in childhood."}
+  - {topic_id: 85, title: "Court-ordered mediation", summary: "Two people who can barely stand each other sit down for court-ordered mediation."}
+  - {topic_id: 86, title: "Volunteer firefighter call", summary: "A volunteer firefighter receives a pager alert during a family dinner."}
+  - {topic_id: 87, title: "Neighbor's piano at night", summary: "Music through a thin wall means something very different on this particular night."}
+  - {topic_id: 88, title: "Research lab contamination", summary: "A possible contamination event threatens months of fragile research."}
+  - {topic_id: 89, title: "Inheritance auction", summary: "Personal belongings from an estate are tagged for auction in front of family members."}
+  - {topic_id: 90, title: "City marathon volunteer", summary: "A volunteer at a marathon finish line sees someone unexpected emerge from the crowd."}
+  - {topic_id: 91, title: "Language exam oral round", summary: "An oral language exam becomes far more personal than anyone expected."}
+  - {topic_id: 92, title: "Flooded train tunnel", summary: "Commuters are trapped in a dark train after floodwater stops the line."}
+  - {topic_id: 93, title: "Mismatched adoption records", summary: "A clerical error in adoption records raises questions no one knows how to answer."}
+  - {topic_id: 94, title: "Community theater callback", summary: "A callback audition forces someone to stand in the exact light they usually avoid."}
+  - {topic_id: 95, title: "Missing wallet before interview", summary: "A missing wallet on the morning of a crucial interview sends the entire day off course."}
+  - {topic_id: 96, title: "Broken irrigation line", summary: "A farmer discovers a broken irrigation line at the worst possible point in the season."}
+  - {topic_id: 97, title: "Last voicemail before deployment", summary: "A final voicemail arrives before a long deployment begins."}
+  - {topic_id: 98, title: "Forgery accusation", summary: "A respected worker is suddenly accused of forging a signature and must respond immediately."}
+  - {topic_id: 99, title: "Child's first recital", summary: "A parent watches a child's first recital while carrying invisible pressure from every direction."}
+  - {topic_id: 100, title: "Returning borrowed ashes", summary: "Someone must return a container of ashes that has unexpectedly become difficult to let go of."}
