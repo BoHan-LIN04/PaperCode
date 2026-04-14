@@ -24,9 +24,6 @@ venv/
 *.npy
 *.npz
 
-# Local cloned upstream repos
-prompt-tuning/
-
 # Generated outputs from local reproduction runs
 soft_prompt/artifacts/
 soft_prompt/.pytest_cache/
