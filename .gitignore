@@ -10,14 +10,14 @@ venv/
 *.log
 
 # Model / cache / artifacts
-artifacts/
-checkpoints/
-outputs/
-cache/
-*.mmap
-*.pt
-*.bin
-*.ckpt
+# artifacts/
+# checkpoints/
+# outputs/
+# cache/
+# *.mmap
+# *.pt
+# *.bin
+# *.ckpt
 
 # Large data
 *.jsonl

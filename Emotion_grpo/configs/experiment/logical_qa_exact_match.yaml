@@ -1,0 +1,38 @@
+defaults:
+  base: base
+  model: qwen2_5_0_5b_instruct
+  runtime: single_gpu
+
+experiment_name: logical_qa_exact_match
+
+datasets:
+  train_jsonl: data/logical_prepared/logical_qa_train.jsonl
+  val_jsonl: data/logical_prepared/logical_qa_val.jsonl
+  processed_train: data/logical_prepared/processed/train.parquet
+  processed_val: data/logical_prepared/processed/val.parquet
+  logical_qa_sources:
+    train_files:
+      - data/logical/AIME/train.jsonl
+      - data/logical/AMC/AMC_train.jsonl
+      - data/logical/Math/Math_train.jsonl
+      - data/logical/gsm8k/gsm8k_train.jsonl
+    val_files:
+      - data/logical/AIME/test.jsonl
+      - data/logical/AMC/AMC_test.jsonl
+      - data/logical/Math/Math_validation.jsonl
+      - data/logical/gsm8k/gsm8k_validation.jsonl
+
+reward:
+  provider_cls: emotion_grpo.rewards.logical_exact_match_provider.LogicalExactMatchRewardProvider
+  provider_kwargs:
+    __replace__: true
+    target_field: ground_truth
+    correct_reward: 1.0
+    incorrect_reward: -1.0
+    missing_target_reward: -1.0
+
+verl:
+  trainer:
+    project_name: Emotion_grpo
+    experiment_name: logical_qa_exact_match
+    default_local_dir: outputs/logical_qa_exact_match

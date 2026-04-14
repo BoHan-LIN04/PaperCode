@@ -37,6 +37,12 @@ def _resolve_path(path_value: str | None, project_root: Path) -> str | None:
     return str((project_root / candidate).resolve())
 
 
+def _resolve_path_list(path_values: list[str] | None, project_root: Path) -> list[str]:
+    if not path_values:
+        return []
+    return [resolved for resolved in (_resolve_path(path_value, project_root) for path_value in path_values) if resolved is not None]
+
+
 def load_experiment_config(config_name: str, config_dir: str | Path | None = None) -> dict[str, Any]:
     project_root = Path(__file__).resolve().parents[2]
     resolved_config_dir = Path(config_dir) if config_dir is not None else project_root / "configs"
@@ -66,6 +72,10 @@ def load_experiment_config(config_name: str, config_dir: str | Path | None = Non
     merged.setdefault("datasets", {})
     for key in ("train_jsonl", "val_jsonl", "processed_train", "processed_val"):
         merged["datasets"][key] = _resolve_path(merged["datasets"].get(key), project_root)
+    logical_cfg = merged["datasets"].setdefault("logical_qa_sources", {})
+    if isinstance(logical_cfg, dict):
+        logical_cfg["train_files"] = _resolve_path_list(logical_cfg.get("train_files"), project_root)
+        logical_cfg["val_files"] = _resolve_path_list(logical_cfg.get("val_files"), project_root)
 
     trainer_cfg = merged.setdefault("verl", {}).setdefault("trainer", {})
     if "default_local_dir" in trainer_cfg:

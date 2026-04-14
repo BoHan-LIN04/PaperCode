@@ -13,6 +13,8 @@ the final `emotion_vectors_orth.npy` artifacts produced by `/opt/data/private/lb
 - A pluggable `IntrinsicRewardProvider` interface
 - A reproducible `RandomIntrinsicRewardProvider`
 - An `EmotionVectorRewardProvider` that converts Qwen hidden states into scalar RL reward
+- A `LogicalExactMatchRewardProvider` for answer-style logical QA datasets
+- A `LogicalVectorRewardProvider` for vector-based reasoning reward on logical QA
 - Demo configs, scripts, and minimal tests
 
 ## Project layout
@@ -84,6 +86,24 @@ Run the emotion-vector reward demo backed by the Qwen3-0.6B artifact from `anthr
 ./scripts/train_emotion_vector_qwen3_0_6b.sh
 ```
 
+Run the logical QA training config over `data/logical/` answer-style subsets:
+
+```bash
+./scripts/train_logical_qa.sh
+```
+
+Run the logical reasoning vector config that rewards hidden-state alignment with good reasoning traces:
+
+```bash
+./scripts/train_logical_reasoning_vector.sh
+```
+
+If you want to pre-build the logical reasoning vector artifact before RL starts:
+
+```bash
+./scripts/build_logical_reasoning_vector.sh
+```
+
 Preview the generated VERL command without launching training:
 
 ```bash
@@ -153,6 +173,51 @@ The shipped demo config uses:
 
 Make sure your dataset labels match the available artifact emotions. The bundled vector demo uses `hopeful`,
 `joyful`, `calm`, and `grateful`, all of which exist in the Qwen3-0.6B vector set.
+
+## Logical QA Reward
+
+The `logical_qa_exact_match` config is intended for raw datasets under `data/logical/` that contain a
+`question` field and a short final `answer` string. On first run it automatically prepares:
+
+- `data/logical_prepared/logical_qa_train.jsonl`
+- `data/logical_prepared/logical_qa_val.jsonl`
+- corresponding parquet files under `data/logical_prepared/processed/`
+
+The current shipped config includes these answer-style subsets:
+
+- `AIME`
+- `AMC`
+- `Math`
+- `gsm8k`
+
+It does not include `HumanEval` or `Mbpp`, because those require code-execution reward rather than simple
+exact-match string reward.
+
+## Logical Reasoning Vector Reward
+
+If you want the model to reason normally but avoid online reward based directly on the final answer string,
+use the `logical_reasoning_vector_qwen3_0_6b` config.
+
+This path works in two stages:
+
+1. It reads offline reasoning traces from:
+   - `AIME_results_Qwen3-32B_filtered.jsonl`
+   - `AMC_results_Qwen3-32B_filtered.jsonl`
+   - `Math_results_Qwen3-32B_filtered.jsonl`
+   - `gsm8k_results_Qwen3-32B_filtered.jsonl`
+2. It embeds their `thinking` text with a frozen scorer model and builds:
+   - a positive centroid from `is_good=true`
+   - a negative centroid from `is_good=false`
+   - a logical reasoning vector equal to `positive - negative`
+3. During RL training, the online reward uses only the current generation's hidden state projection against
+   these reasoning centroids. It does not compare the generated final answer to the gold answer online.
+
+The shipped config uses:
+
+- scorer model: `Qwen/Qwen3-0.6B`
+- scorer layer: `8`
+- reward mode: `cosine(positive) - cosine(negative)`
+- artifact output: `artifacts/logical_vectors/qwen3_0_6b_layer8/`
 
 ## Tests
 
