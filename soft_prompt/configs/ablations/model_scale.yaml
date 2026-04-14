@@ -1,0 +1,12 @@
+extends: ../base.yaml
+
+output:
+  output_dir: artifacts/ablation-model-scale
+
+sweep:
+  enabled: true
+  parameter: model.name_or_path
+  values:
+    - google/t5-v1_1-small
+    - google/t5-v1_1-base
+    - google/t5-v1_1-large

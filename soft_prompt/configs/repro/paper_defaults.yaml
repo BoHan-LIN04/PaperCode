@@ -1,0 +1,24 @@
+extends: ../base.yaml
+
+# Paper Appendix A default-style setup:
+# - 100K LM adaptation
+# - prompt length 100
+# - class-label init
+prompt:
+  num_virtual_tokens: 100
+  init_strategy: class_labels
+
+training:
+  learning_rate: 0.3
+  max_steps: 30000
+  warmup_steps: 4000
+  parameter_scaling: true
+  decay_factor: 0.1
+  steps_per_decay: 6000
+
+adaptation:
+  enabled: true
+  max_steps: 100000
+
+output:
+  output_dir: artifacts/paper-defaults

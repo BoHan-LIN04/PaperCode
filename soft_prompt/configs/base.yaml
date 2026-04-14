@@ -1,0 +1,68 @@
+model:
+  name_or_path: google/t5-v1_1-small
+  tokenizer_name_or_path:
+  device: auto
+
+dataset:
+  task_name: boolq
+  dataset_name: super_glue
+  dataset_config_name:
+  train_split: train
+  eval_split: validation
+  max_train_examples: 256
+  max_eval_examples: 128
+  max_source_length: 256
+  max_target_length: 16
+
+prompt:
+  num_virtual_tokens: 20
+  init_strategy: class_labels
+  random_range: 0.5
+  sampled_vocab_size: 5000
+
+training:
+  seed: 13
+  batch_size: 8
+  eval_batch_size: 8
+  learning_rate: 0.3
+  weight_decay: 1.0e-5
+  max_steps: 60
+  eval_steps: 20
+  save_steps: 20
+  early_stopping_patience: 3
+  generation_max_new_tokens: 16
+  num_beams: 1
+  gradient_clip_norm: 1.0
+  logging_steps: 10
+
+adaptation:
+  enabled: false
+  dataset_name: wikitext
+  dataset_config_name: wikitext-2-raw-v1
+  train_split: train
+  eval_split: validation
+  text_column: text
+  prefix_fraction: 0.5
+  max_source_length: 128
+  max_target_length: 128
+  batch_size: 8
+  learning_rate: 1.0e-4
+  weight_decay: 0.0
+  max_steps: 100
+  eval_steps: 50
+  output_dir: artifacts/lm-adapted
+
+output:
+  output_dir: artifacts/base
+  save_predictions: true
+  save_metrics: true
+
+baseline:
+  mode: prompt_tuning
+  multitask_tasks: [boolq, cb, copa, multirc, record, rte, wic, wsc]
+  add_task_prefix: true
+
+sweep:
+  enabled: false
+  parameter: prompt.num_virtual_tokens
+  values: [1, 5, 20, 100]

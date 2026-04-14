@@ -1,0 +1,16 @@
+extends: ../base.yaml
+
+output:
+  output_dir: artifacts/baseline-model-tuning
+
+baseline:
+  mode: model_tuning
+
+prompt:
+  num_virtual_tokens: 20
+
+training:
+  learning_rate: 1.0e-3
+  max_steps: 200
+  eval_steps: 50
+  early_stopping_patience: 4

@@ -1,0 +1,9 @@
+extends: ../base.yaml
+
+output:
+  output_dir: artifacts/ablation-init-strategy
+
+sweep:
+  enabled: true
+  parameter: prompt.init_strategy
+  values: [random_uniform, sampled_vocab, class_labels]

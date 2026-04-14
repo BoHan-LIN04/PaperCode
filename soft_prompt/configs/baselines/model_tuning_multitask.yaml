@@ -1,0 +1,15 @@
+extends: ../base.yaml
+
+output:
+  output_dir: artifacts/baseline-model-tuning-multitask
+
+baseline:
+  mode: model_tuning_multitask
+  multitask_tasks: [boolq, cb, copa, multirc, record, rte, wic, wsc]
+  add_task_prefix: true
+
+training:
+  learning_rate: 1.0e-3
+  max_steps: 300
+  eval_steps: 50
+  early_stopping_patience: 5

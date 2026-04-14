@@ -1,0 +1,9 @@
+extends: ../base.yaml
+
+output:
+  output_dir: artifacts/ablation-prompt-length
+
+sweep:
+  enabled: true
+  parameter: prompt.num_virtual_tokens
+  values: [1, 5, 20, 100, 150]

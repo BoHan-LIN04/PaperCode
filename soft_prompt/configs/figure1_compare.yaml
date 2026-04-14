@@ -1,0 +1,25 @@
+extends: ./base.yaml
+
+output:
+  output_dir: artifacts/figure1-compare
+
+training:
+  batch_size: 8
+  eval_batch_size: 8
+  max_steps: 200
+  eval_steps: 50
+  early_stopping_patience: 4
+
+compare:
+  enabled: true
+  model_names:
+    - google/t5-v1_1-small
+    - google/t5-v1_1-base
+    - google/t5-v1_1-large
+  methods:
+    - prompt_tuning
+    - model_tuning
+    - model_tuning_multitask
+  seeds: [13, 17, 19]
+  output_csv: summary.csv
+  output_json: runs.json
