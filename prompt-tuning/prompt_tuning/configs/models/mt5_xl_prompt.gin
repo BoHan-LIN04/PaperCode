@@ -1,0 +1,5 @@
+# mT5 1.1 XL Prompt Model.
+# Provides MODEL, PROMPT, and PROMPT_LENGTH
+
+include 'prompt_tuning/configs/models/mt5_prompt.gin'
+include 'prompt_tuning/configs/models/sizes/xl.gin'

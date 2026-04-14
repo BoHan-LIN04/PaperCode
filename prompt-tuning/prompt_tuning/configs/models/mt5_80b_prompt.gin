@@ -1,0 +1,5 @@
+# MT5 80b model.
+# Provides MODEL, PROMPT, and PROMPT_LENGTH
+
+include 'prompt_tuning/configs/models/mt5_prompt.gin'
+include 'prompt_tuning/configs/models/sizes/80b.gin'

@@ -1,0 +1,4 @@
+# T5.1.1 Small Prompt model.
+
+include 'prompt_tuning/configs/models/t5_1_1_prompt.gin'
+include 'prompt_tuning/configs/models/sizes/base.gin'

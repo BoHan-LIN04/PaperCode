@@ -1,0 +1,26 @@
+# Flaxformer implementation of adding IA^3 to t5 1.1
+
+from __gin__ import dynamic_registration
+
+from flax import linen
+from prompt_tuning.extended.train import ia3
+from flaxformer.components import dense
+from flaxformer.components.attention import dense_attention
+from flaxformer.architectures.t5 import t5_architecture
+
+include 'prompt_tuning/configs/architectures/t5_1_1_flaxformer.gin'
+
+# Add ia3 to all attention implementations
+dense_attention.MultiHeadDotProductAttention:
+  k_conv = @ia3.IA3Attention()
+  v_conv = @ia3.IA3Attention()
+
+ia3.IA3Attention:
+  dtype = %ACTIVATION_DTYPE
+
+dense.MlpBlock:
+  intermediate_conv = @ia3.IA3()
+
+ia3.IA3:
+  axis_name = ('mlp',)
+  dtype = %ACTIVATION_DTYPE
