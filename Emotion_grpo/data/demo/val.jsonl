@@ -1,0 +1,2 @@
+{"messages":[{"role":"system","content":"You are an emotion analysis assistant."},{"role":"user","content":"What is the dominant emotion here: 'She could not stop smiling after seeing her family at the station.'"}],"metadata":{"id":"val-1","difficulty":"easy","label":"joy","domain":"emotion_demo"}}
+

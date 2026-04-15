@@ -1,0 +1,4 @@
+{"messages":[{"role":"system","content":"You are an emotion analysis assistant."},{"role":"user","content":"Read the sentence and describe the dominant emotion: 'I finally received the acceptance letter I had been waiting for.'"}],"metadata":{"id":"train-1","difficulty":"easy","label":"joy","domain":"emotion_demo"}}
+{"messages":[{"role":"system","content":"You are an emotion analysis assistant."},{"role":"user","content":"Identify the emotion in this sentence and explain briefly: 'He kept staring at the empty chair after the funeral ended.'"}],"metadata":{"id":"train-2","difficulty":"medium","label":"sadness","domain":"emotion_demo"}}
+{"messages":[{"role":"system","content":"You are an emotion analysis assistant."},{"role":"user","content":"Describe the likely emotion in the sentence: 'When the lights suddenly went out, her hands started shaking.'"}],"metadata":{"id":"train-3","difficulty":"easy","label":"fear","domain":"emotion_demo"}}
+
