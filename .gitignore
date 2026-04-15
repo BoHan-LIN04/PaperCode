@@ -20,9 +20,9 @@ venv/
 # *.ckpt
 
 # Large data
-*.jsonl
-*.npy
-*.npz
+# *.jsonl
+# *.npy
+# *.npz
 
 # Generated outputs from local reproduction runs
 soft_prompt/artifacts/
