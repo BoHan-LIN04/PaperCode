@@ -1,0 +1,9 @@
+extends: anthropic_qwen3_14b_emotion24_task.yaml
+
+training:
+  max_steps: 500
+  eval_steps: 50
+  save_steps: 50
+
+output:
+  output_dir: artifacts/anthropic-qwen3-14b-emotion24-task-500

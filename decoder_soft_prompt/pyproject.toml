@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "decoder-soft-prompt-repro"
+version = "0.1.0"
+description = "Minimal decoder-only soft prompt tuning scaffold for causal language models"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "PyYAML>=6.0",
+  "transformers>=4.46.0",
+  "torch>=2.5.0",
+  "datasets>=2.20.0",
+  "sentencepiece>=0.2.0",
+  "protobuf>=4.25.0",
+  "numpy>=1.26.0",
+  "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[project.scripts]
+decoder-soft-prompt-repro = "decoder_soft_prompt_repro.cli:main"
+decoder-soft-prompt-fit-projection = "decoder_soft_prompt_repro.projection:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

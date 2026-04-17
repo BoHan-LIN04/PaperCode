@@ -1,0 +1,36 @@
+extends: base.yaml
+
+model:
+  name_or_path: Qwen/Qwen3-0.6B
+  tokenizer_name_or_path: Qwen/Qwen3-0.6B
+  device: auto
+  trust_remote_code: true
+
+dataset:
+  train_file: data/emotion24_train.jsonl
+  eval_file: data/emotion24_eval.jsonl
+  max_source_length: 256
+  max_target_length: 96
+
+prompt:
+  num_virtual_tokens: 24
+  init_strategy: emotion_vectors
+  emotion_vector_route: projected
+  emotion_vectors_path: ../anthropic/artifacts/05_emotion_vectors/intermediate/emotion_vectors_orth.npy
+  emotion_vector_metadata_path: ../anthropic/artifacts/05_emotion_vectors/intermediate/vector_metadata.json
+  emotion_vector_projection_path: artifacts/projections/qwen14b_to_qwen06b.npy
+  emotion_names: [amused, blissful, calm, cheerful, content, curious, delighted, elated, energized, enthusiastic, excited, grateful, happy, hopeful, inspired, interested, joyful, motivated, optimistic, peaceful, playful, relieved, satisfied, serene]
+  emotion_vector_combination: repeat
+  emotion_vector_l2_normalize: false
+
+training:
+  batch_size: 1
+  eval_batch_size: 1
+  learning_rate: 0.01
+  max_steps: 48
+  eval_steps: 12
+  save_steps: 12
+  max_new_tokens: 64
+
+output:
+  output_dir: artifacts/anthropic-qwen3-0.6b-projected-emotion24-task
