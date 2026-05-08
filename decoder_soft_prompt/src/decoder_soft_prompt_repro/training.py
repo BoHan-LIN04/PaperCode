@@ -4,12 +4,14 @@ import json
 import random
 from pathlib import Path
 
+
 import numpy as np
 import torch
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from evaluate import load as load_metric
 
 from .config import ExperimentConfig, PromptConfig, config_to_dict
 from .data import CausalCollator, load_jsonl_dataset
@@ -219,6 +221,51 @@ def _evaluate(prompt_model, eval_loader, tokenizer, device, max_new_tokens, temp
     predictions: list[str] = []
     references: list[str] = []
 
+    import re
+    label_list = [label.strip().lower() for label in getattr(eval_loader.dataset, 'emotion_names', [])]
+    if not label_list:
+        label_list = [label.strip().lower() for label in getattr(getattr(eval_loader, 'config', None), 'prompt', {}).get('emotion_names', [])]
+    if not label_list:
+        label_list = [
+            'admiration', 'amusement', 'anger', 'annoyance', 'approval', 'caring', 'confusion', 'curiosity', 'desire', 'disappointment',
+            'disapproval', 'disgust', 'embarrassment', 'excitement', 'fear', 'gratitude', 'grief', 'joy', 'love', 'nervousness',
+            'optimism', 'pride', 'realization', 'relief', 'remorse', 'sadness', 'surprise', 'neutral'
+        ]
+    def extract_label(text, label_list):
+        # 从生成结果中提取第一个有效标签；如果没有匹配标签则返回空串。
+        for word in re.split(r'[\s,.;:!?\"\']+', text.strip()):
+            token = word.lower().strip()
+            if token in label_list:
+                return token
+        return ""
+
+    # 受限标签解码：仅在合法标签对应的首 token 中选择，避免自由生成导致的空串与噪声。
+    label_to_candidate_ids: dict[str, list[int]] = {}
+    for label in label_list:
+        candidates: set[int] = set()
+        for form in (label, f" {label}"):
+            token_ids = tokenizer.encode(form, add_special_tokens=False)
+            if token_ids:
+                candidates.add(int(token_ids[0]))
+        if candidates:
+            label_to_candidate_ids[label] = sorted(candidates)
+
+    def decode_labels_from_logits(next_token_logits: torch.Tensor) -> list[str]:
+        batch_predictions: list[str] = []
+        if not label_to_candidate_ids:
+            return [""] * next_token_logits.shape[0]
+        for row in next_token_logits:
+            best_label = ""
+            best_score = None
+            for label, candidate_ids in label_to_candidate_ids.items():
+                score = torch.max(row[candidate_ids])
+                score_value = float(score.detach().cpu())
+                if best_score is None or score_value > best_score:
+                    best_score = score_value
+                    best_label = label
+            batch_predictions.append(best_label)
+        return batch_predictions
+
     for batch in tqdm(eval_loader, desc="eval", leave=False):
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
@@ -230,25 +277,75 @@ def _evaluate(prompt_model, eval_loader, tokenizer, device, max_new_tokens, temp
         total_loss += float(outputs.loss.detach().cpu())
         total_batches += 1
 
-        generated = prompt_model.generate(
-            input_ids=source_ids,
-            attention_mask=source_attention_mask,
-            max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            do_sample=do_sample,
-            top_k=top_k,
-        )
-        decoded = tokenizer.batch_decode(generated, skip_special_tokens=True)
-        predictions.extend([_normalize_text(item) for item in decoded])
+        source_outputs = prompt_model(input_ids=source_ids, attention_mask=source_attention_mask)
+        next_token_logits = source_outputs.logits[:, -1, :]
+        predictions.extend(decode_labels_from_logits(next_token_logits))
         references.extend([_normalize_text(item) for item in batch["target_texts"]])
 
     average_loss = total_loss / max(total_batches, 1)
     exact_match = 0.0
     if references:
         exact_match = sum(int(pred == ref) for pred, ref in zip(predictions, references)) / len(references)
+
+    # 生成任务指标（已移除 BLEU/ROUGE）
+    consistency = 0.0  # 保证后续一定有定义
+
+    # 分类准确率和macro F1
+    try:
+        from sklearn.metrics import accuracy_score, f1_score
+        # 获取情感类别列表
+        label_list = [label.strip().lower() for label in getattr(eval_loader.dataset, 'emotion_names', [])]
+        if not label_list:
+            # 兼容直接从config获取
+            label_list = [label.strip().lower() for label in getattr(getattr(eval_loader, 'config', None), 'prompt', {}).get('emotion_names', [])]
+        if not label_list:
+            # 兜底：常见28类
+            label_list = [
+                'admiration', 'amusement', 'anger', 'annoyance', 'approval', 'caring', 'confusion', 'curiosity', 'desire', 'disappointment',
+                'disapproval', 'disgust', 'embarrassment', 'excitement', 'fear', 'gratitude', 'grief', 'joy', 'love', 'nervousness',
+                'optimism', 'pride', 'realization', 'relief', 'remorse', 'sadness', 'surprise', 'neutral'
+            ]
+        label_to_index = {label: idx for idx, label in enumerate(label_list)}
+        pred_indices = [label_to_index.get(pred.strip().lower(), -1) for pred in predictions]
+        ref_indices = [label_to_index.get(ref.strip().lower(), -1) for ref in references]
+        unmatched_preds = [pred for pred in predictions if label_to_index.get(pred.strip().lower(), -1) == -1]
+        if unmatched_preds:
+            # 仅打印统计和少量样本，避免日志刷屏。
+            unique_unmatched = sorted(set(unmatched_preds))
+            print(
+                "[DEBUG] unmatched predictions (not in label_list), "
+                f"count={len(unmatched_preds)}, unique={len(unique_unmatched)}, samples={unique_unmatched[:10]}"
+            )
+        print("[DEBUG] predictions:", predictions[:10])
+        print("[DEBUG] references:", references[:10])
+        print("[DEBUG] pred_indices:", pred_indices[:10])
+        print("[DEBUG] ref_indices:", ref_indices[:10])
+        valid = [(p, r) for p, r in zip(pred_indices, ref_indices) if p >= 0 and r >= 0]
+        print(f"[DEBUG] valid pairs: {len(valid)} / {len(pred_indices)}")
+        if valid:
+            pred_valid, ref_valid = zip(*valid)
+            cls_acc = accuracy_score(ref_valid, pred_valid)
+            macro_f1 = f1_score(ref_valid, pred_valid, average='macro')
+        else:
+            print("[DEBUG] No valid pairs for classification metrics.")
+            cls_acc = 0.0
+            macro_f1 = 0.0
+    except Exception as e:
+        print(f"[DEBUG] 分类指标计算异常: {e}")
+        print("[DEBUG] label_list:", label_list if 'label_list' in locals() else None)
+        print("[DEBUG] predictions:", predictions[:10])
+        print("[DEBUG] references:", references[:10])
+        cls_acc = 0.0
+        macro_f1 = 0.0
+        # 分类失败时，情感一致性也无法评估，保持 consistency=0.0
+
+
     return {
         "loss": average_loss,
         "exact_match": exact_match,
+        "classification_accuracy": cls_acc,
+        "macro_f1": macro_f1,
+        "emotion_consistency": consistency,
         "predictions": predictions,
         "references": references,
     }
@@ -320,7 +417,15 @@ def evaluate_prompt_model(config: ExperimentConfig, prompt_path: str | Path | No
         do_sample=config.training.do_sample,
         top_k=config.training.top_k,
     )
-    return {"metrics": {"loss": metrics["loss"], "exact_match": metrics["exact_match"]}, "predictions": metrics["predictions"]}
+    return {
+        "metrics": {
+            "loss": metrics["loss"],
+            "exact_match": metrics["exact_match"],
+            "classification_accuracy": metrics["classification_accuracy"],
+            "macro_f1": metrics["macro_f1"]
+        },
+        "predictions": metrics["predictions"]
+    }
 
 
 def train_prompt_model(config: ExperimentConfig) -> dict:
@@ -338,6 +443,39 @@ def train_prompt_model(config: ExperimentConfig) -> dict:
     train_loader = DataLoader(train_dataset, batch_size=config.training.batch_size, shuffle=True, collate_fn=collator)
     eval_loader = DataLoader(eval_dataset, batch_size=config.training.eval_batch_size, shuffle=False, collate_fn=collator)
 
+    # 计算类别权重，缓解标签不均衡（neutral 等高频类导致 macro_f1 极低）
+    label_list_train = config.prompt.emotion_names
+    if label_list_train:
+        from collections import Counter
+        all_targets = [item["target"] for item in train_dataset.data] if hasattr(train_dataset, "data") else []
+        if not all_targets:
+            # fallback: 扫描 dataset
+            try:
+                all_targets = [train_dataset[i]["target_texts"] for i in range(len(train_dataset))]
+            except Exception:
+                all_targets = []
+        if all_targets:
+            label_counts = Counter(str(t).strip().lower() for t in all_targets)
+            total = sum(label_counts.values())
+            class_weights = torch.tensor(
+                [total / max(label_counts.get(lb.lower(), 1), 1) for lb in label_list_train],
+                dtype=torch.float32,
+                device=device,
+            )
+            class_weights = class_weights / class_weights.sum() * len(label_list_train)
+            # 构建 target token -> weight 映射
+            label_token_weights: dict[int, float] = {}
+            for lb, w in zip(label_list_train, class_weights.tolist()):
+                for form in (lb, f" {lb}"):
+                    tids = tokenizer.encode(form, add_special_tokens=False)
+                    if tids:
+                        label_token_weights[int(tids[0])] = w
+            print(f"[INFO] Class weights computed for {len(label_token_weights)} label tokens.")
+        else:
+            label_token_weights = {}
+    else:
+        label_token_weights = {}
+
     optimizer = AdamW(
         prompt_model.trainable_parameters(),
         lr=config.training.learning_rate,
@@ -352,6 +490,8 @@ def train_prompt_model(config: ExperimentConfig) -> dict:
     train_iterator = iter(train_loader)
 
     while step < config.training.max_steps:
+        if (step + 1) % config.training.eval_steps == 0 or step == 0:
+            print(f"[INFO] Training step: {step+1}/{config.training.max_steps}")
         prompt_model.train()
         try:
             batch = next(train_iterator)
@@ -365,6 +505,25 @@ def train_prompt_model(config: ExperimentConfig) -> dict:
 
         outputs = prompt_model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
         loss = outputs.loss
+        # 类别加权损失：对 label token 位置重新加权
+        if label_token_weights and outputs.logits is not None:
+            try:
+                logits = outputs.logits  # [B, L, V]
+                shift_logits = logits[..., :-1, :].contiguous()
+                shift_labels = labels[..., 1:].contiguous()
+                weight_vec = torch.ones(shift_logits.size(-1), device=device)
+                for tid, w in label_token_weights.items():
+                    if tid < weight_vec.size(0):
+                        weight_vec[tid] = w
+                loss_fct = torch.nn.CrossEntropyLoss(
+                    weight=weight_vec, ignore_index=-100, reduction="mean"
+                )
+                loss = loss_fct(
+                    shift_logits.view(-1, shift_logits.size(-1)),
+                    shift_labels.view(-1),
+                )
+            except Exception:
+                pass  # 回退到原始 loss
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(prompt_model.trainable_parameters(), config.training.gradient_clip_norm)
@@ -385,15 +544,18 @@ def train_prompt_model(config: ExperimentConfig) -> dict:
                 do_sample=config.training.do_sample,
                 top_k=config.training.top_k,
             )
-            current_metric = float(metrics["exact_match"])
+            current_metric = float(metrics["macro_f1"])  # 改为 macro_f1 作为 best checkpoint 判据
             current_eval_loss = float(metrics["loss"])
             history.append(
                 {
                     "step": step,
                     "eval_loss": current_eval_loss,
-                    "eval_exact_match": current_metric,
+                    "eval_exact_match": float(metrics["exact_match"]),
+                    "eval_macro_f1": current_metric,
+                    "eval_classification_accuracy": float(metrics["classification_accuracy"]),
                 }
             )
+            print(f"[EVAL] step={step} loss={current_eval_loss:.4f} acc={metrics['classification_accuracy']:.4f} macro_f1={current_metric:.4f}")
             if _is_better_checkpoint(current_metric, current_eval_loss, best_exact_match, best_eval_loss):
                 best_exact_match = current_metric
                 best_eval_loss = current_eval_loss
@@ -420,6 +582,58 @@ def train_prompt_model(config: ExperimentConfig) -> dict:
         "metrics": result["metrics"],
         "history": history,
     }
+    # 打印最终指标
+    print("[RESULT] best_prompt_path:", summary["best_prompt_path"])
+    print("[RESULT] eval_loss:", summary["metrics"].get("loss"))
+    print("[RESULT] exact_match:", summary["metrics"].get("exact_match"))
+    print("[RESULT] classification_accuracy:", summary["metrics"].get("classification_accuracy"))
+    print("[RESULT] macro_f1:", summary["metrics"].get("macro_f1"))
     if config.output.save_metrics:
         _write_json(output_dir / "metrics.json", summary)
     return summary
+
+
+# ========== 动态情绪向量注入函数（可集成到 forward 或数据预处理） ==========
+import torch.nn.functional as F
+def inject_dynamic_emotion_vectors(input_ids, tokenizer, emotion_vector_table, trigger_tokens, embeddings, mode="concat"):
+    """
+    input_ids: [batch, seq_len]  原始token id序列
+    tokenizer: 用于decode token
+    emotion_vector_table: dict, token(str)->tensor([hidden])
+    trigger_tokens: set/list, 触发注入的token（如情感词）
+    embeddings: [batch, seq_len, hidden]，原始embedding
+    mode: 'concat'（插入虚拟token）、'add'（加和）、'replace'（替换）
+    返回：新的embeddings（如插入后shape变化）
+    """
+    batch_size, seq_len, hidden = embeddings.shape
+    device = embeddings.device
+    new_embeddings = []
+    for b in range(batch_size):
+        emb_list = []
+        for i in range(seq_len):
+            token = tokenizer.decode([input_ids[b, i].item()])
+            emb_list.append(embeddings[b, i].unsqueeze(0))
+            if token in trigger_tokens and token in emotion_vector_table:
+                emo_vec = emotion_vector_table[token].to(device)
+                if mode == "concat":
+                    emb_list.append(emo_vec.unsqueeze(0))  # 插入虚拟token
+                elif mode == "add":
+                    emb_list[-1] = (emb_list[-1] + emo_vec.unsqueeze(0)) / 2
+                elif mode == "replace":
+                    emb_list[-1] = emo_vec.unsqueeze(0)
+        new_emb = torch.cat(emb_list, dim=0)  # [new_seq, hidden]
+        new_embeddings.append(new_emb)
+    # 对齐长度（pad到最大）
+    max_len = max(e.shape[0] for e in new_embeddings)
+    padded = []
+    for e in new_embeddings:
+        if e.shape[0] < max_len:
+            pad = torch.zeros((max_len - e.shape[0], hidden), device=device)
+            e = torch.cat([e, pad], dim=0)
+        padded.append(e.unsqueeze(0))
+    return torch.cat(padded, dim=0)  # [batch, max_len, hidden]
+
+# 用法示例（集成到 forward 前）：
+# embeddings = model.embed_tokens(input_ids)
+# new_embeddings = inject_dynamic_emotion_vectors(input_ids, tokenizer, emotion_vector_table, trigger_tokens, embeddings, mode="concat")
+# output = model.forward(inputs_embeds=new_embeddings, ...)

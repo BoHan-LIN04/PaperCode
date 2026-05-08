@@ -1,25 +1,27 @@
+
+# ====== emotion_vectors 方案（主实验） ======
 extends: base.yaml
 
 model:
-  name_or_path: Qwen/Qwen3-14B
-  tokenizer_name_or_path: Qwen/Qwen3-14B
+  name_or_path: Qwen/Qwen3-8B
+  tokenizer_name_or_path: Qwen/Qwen3-8B
   device: auto
   trust_remote_code: true
 
 dataset:
-  train_file: data/goemotions_train.jsonl
-  eval_file: data/goemotions_test.jsonl
+  train_file: data/emotion28_train_tagged.jsonl
+  eval_file: data/emotion28_eval_tagged.jsonl
   input_field: input
   target_field: target
   max_source_length: 128
   max_target_length: 16
 
 prompt:
-  num_virtual_tokens: 24
+  num_virtual_tokens: 28
   init_strategy: emotion_vectors
   emotion_vector_route: same_model
-  emotion_vectors_path: ../anthropic/artifacts/05_emotion_vectors/intermediate/emotion_vectors_orth.npy
-  emotion_vector_metadata_path: ../anthropic/artifacts/05_emotion_vectors/intermediate/vector_metadata.json
+  emotion_vectors_path: data/emotion_vectors_orth.npy
+  emotion_vector_metadata_path: data/vector_metadata.json
   emotion_names: [admiration, amusement, anger, annoyance, approval, caring, confusion, curiosity, desire, disappointment, disapproval, disgust, embarrassment, excitement, fear, gratitude, grief, joy, love, nervousness, optimism, pride, realization, relief, remorse, sadness, surprise, neutral]
   emotion_vector_combination: repeat
   emotion_vector_l2_normalize: false
@@ -27,12 +29,53 @@ prompt:
 training:
   batch_size: 2
   eval_batch_size: 2
-  learning_rate: 0.005
-  max_steps: 300
-  eval_steps: 25
-  save_steps: 25
-  logging_steps: 5
-  max_new_tokens: 16
+  learning_rate: 0.0005
+  max_steps: 3000
+  eval_steps: 200
+  save_steps: 200
+  logging_steps: 50
+  max_new_tokens: 4
 
 output:
   output_dir: artifacts/goemotions-soft-prompt
+
+# ====== random_uniform 方案（无语义 baseline，取消注释使用） ======
+# prompt:
+#   num_virtual_tokens: 28
+#   init_strategy: random_uniform
+#   emotion_vector_route: same_model
+#   emotion_vector_l2_normalize: false
+
+# ====== same_model vs projected 消融配置（取消注释使用） ======
+# prompt:
+#   num_virtual_tokens: 28
+#   init_strategy: emotion_vectors
+#   emotion_vector_route: projected
+#   emotion_vectors_path: data/emotion_vectors_orth.npy
+#   emotion_vector_metadata_path: data/vector_metadata.json
+#   emotion_vector_projection_path: data/emotion_vector_projection.npy  # 你的投影矩阵文件
+#   emotion_names: [admiration, amusement, anger, annoyance, approval, caring, confusion, curiosity, desire, disappointment, disapproval, disgust, embarrassment, excitement, fear, gratitude, grief, joy, love, nervousness, optimism, pride, realization, relief, remorse, sadness, surprise, neutral]
+#   emotion_vector_combination: repeat
+#   emotion_vector_l2_normalize: false
+
+# ====== 归一化 vs 不归一化消融配置（取消注释使用） ======
+# prompt:
+#   num_virtual_tokens: 28
+#   init_strategy: emotion_vectors
+#   emotion_vector_route: same_model
+#   emotion_vectors_path: data/emotion_vectors_orth.npy
+#   emotion_vector_metadata_path: data/vector_metadata.json
+#   emotion_names: [admiration, amusement, anger, annoyance, approval, caring, confusion, curiosity, desire, disappointment, disapproval, disgust, embarrassment, excitement, fear, gratitude, grief, joy, love, nervousness, optimism, pride, realization, relief, remorse, sadness, surprise, neutral]
+#   emotion_vector_combination: repeat
+#   emotion_vector_l2_normalize: true
+
+# ====== neutral baseline 方案（所有 prompt 用 neutral 向量，取消注释使用） ======
+# prompt:
+#   num_virtual_tokens: 28
+#   init_strategy: emotion_vectors
+#   emotion_vector_route: same_model
+#   emotion_vectors_path: data/emotion_vectors_orth.npy
+#   emotion_vector_metadata_path: data/vector_metadata.json
+#   emotion_names: [neutral]
+#   emotion_vector_combination: repeat
+#   emotion_vector_l2_normalize: false

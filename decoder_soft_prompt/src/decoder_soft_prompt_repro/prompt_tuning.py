@@ -93,6 +93,11 @@ class SoftPromptCausalLM(nn.Module):
         self.random_range = random_range
         self.sampled_vocab_size = sampled_vocab_size
         self.hidden_size = _resolve_hidden_size(model)
+        print(f"[DEBUG] Model hidden size: {self.hidden_size}")
+        if self.emotion_vectors_path:
+            import numpy as _np
+            _vecs = _np.load(self.emotion_vectors_path)
+            print(f"[DEBUG] Emotion vectors shape: {_vecs.shape}")
         self.prompt_embeddings = nn.Parameter(torch.empty(num_virtual_tokens, self.hidden_size))
 
         for parameter in self.model.parameters():
@@ -244,9 +249,12 @@ class SoftPromptCausalLM(nn.Module):
 
         raise ValueError(f"Unsupported init_strategy: {self.init_strategy}")
 
-    def build_prompted_inputs(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def build_prompted_inputs(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, prompt_override: torch.Tensor = None) -> tuple[torch.Tensor, torch.Tensor]:
         input_embeddings = self.model.get_input_embeddings()(input_ids)
-        prompt = self.prompt_embeddings.to(dtype=input_embeddings.dtype, device=input_embeddings.device)
+        if prompt_override is not None:
+            prompt = prompt_override.to(dtype=input_embeddings.dtype, device=input_embeddings.device)
+        else:
+            prompt = self.prompt_embeddings.to(dtype=input_embeddings.dtype, device=input_embeddings.device)
         prompt = prompt.unsqueeze(0).expand(input_embeddings.shape[0], -1, -1)
         prompt_mask = torch.ones(
             input_embeddings.shape[0],
@@ -280,17 +288,50 @@ class SoftPromptCausalLM(nn.Module):
         temperature: float = 1.0,
         do_sample: bool = False,
         top_k: int | None = None,
+        trigger_token_id: int = None,
+        emotion_label: str = None,
     ) -> torch.Tensor:
+        """
+        trigger_token_id: 触发动态注入的特殊token id（如[EMO_JOY]）
+        emotion_label: 目标情绪类别（如"joy"），用于查表获得emotion vector
+        """
         generated = []
         current_ids = input_ids.clone()
         current_mask = attention_mask.clone()
         finished = torch.zeros(input_ids.shape[0], dtype=torch.bool, device=input_ids.device)
         eos_token_id = self.model.config.eos_token_id
 
-        for _ in range(max_new_tokens):
-            inputs_embeds, prompted_mask = self.build_prompted_inputs(current_ids, current_mask)
+        # 查找trigger token在input中的位置
+        if trigger_token_id is not None:
+            trigger_pos = (current_ids == trigger_token_id).nonzero(as_tuple=True)
+            if len(trigger_pos[1]) > 0:
+                trigger_step = trigger_pos[1][0].item()
+            else:
+                trigger_step = None
+        else:
+            trigger_step = None
+
+        prompt_override = None
+        for step in range(max_new_tokens):
+            # 动态注入逻辑：到达trigger step时查表注入emotion vector
+            if trigger_step is not None and step == trigger_step and emotion_label is not None:
+                # 加载emotion vectors和metadata
+                vectors = torch.from_numpy(np.load(self.emotion_vectors_path)).float().to(current_ids.device)
+                metadata = _load_json(self.emotion_vector_metadata_path)
+                available_names = [str(name).strip().lower() for name in metadata["emotion_names"]]
+                name_to_index = {name: index for index, name in enumerate(available_names)}
+                idx = name_to_index[emotion_label.strip().lower()]
+                selected = vectors[idx].unsqueeze(0)  # shape: [1, hidden_size]
+                if self.emotion_vector_l2_normalize:
+                    selected = _l2_normalize_rows(selected)
+                prompt_override = _expand_emotion_prompt(selected, self.num_virtual_tokens, self.emotion_vector_combination)
+            inputs_embeds, prompted_mask = self.build_prompted_inputs(current_ids, current_mask, prompt_override=prompt_override)
             outputs = self.model(inputs_embeds=inputs_embeds, attention_mask=prompted_mask)
             logits = outputs.logits[:, -1, :]
+
+            # Avoid ending generation immediately with EOS; otherwise decoded output can become empty.
+            if eos_token_id is not None and step == 0:
+                logits[:, eos_token_id] = float("-inf")
 
             if temperature != 1.0:
                 logits = logits / max(temperature, 1e-6)

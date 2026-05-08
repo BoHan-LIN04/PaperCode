@@ -614,3 +614,34 @@ decoder-soft-prompt-repro eval --config configs/base.yaml --prompt-path path/to/
 - [src/decoder_soft_prompt_repro/prompt_tuning.py](src/decoder_soft_prompt_repro/prompt_tuning.py): decoder-only soft prompt 实现
 - [src/decoder_soft_prompt_repro/training.py](src/decoder_soft_prompt_repro/training.py): 训练与评估循环
 - [src/decoder_soft_prompt_repro/cli.py](src/decoder_soft_prompt_repro/cli.py): CLI 入口
+
+## 推荐命令行顺序（完整流程）
+scp -r c:/Users/xiexi/PaperCode/decoder_soft_prompt xinyix888@engr-liu01s.bluecat.arizona.edu:~/
+1. 预处理 goemotions 数据集（如未生成）
+
+```bash
+python preprocess_goemotions.py
+```
+
+2. 检查 emotion_vectors_orth.npy 路径、emotion_names 与标签对齐，配置 configs/goemotions_soft_prompt.yaml
+
+3. 配置检查（可选但推荐）
+
+```bash
+decoder-soft-prompt-repro validate-config --config configs/goemotions_soft_prompt.yaml
+```
+
+4. 训练 soft prompt（查表式 emotion vector 初始化，冻结大模型参数）
+
+```bash
+python src/train.py --config configs/goemotions_soft_prompt.yaml
+```
+
+5. 评测 soft prompt 效果
+
+```bash
+python src/eval.py --config configs/goemotions_soft_prompt.yaml
+```
+
+6. 可选：ablation/对比实验（如直接拼接/归一化/投影），只需修改 config 中相关参数，重复第4、5步
+

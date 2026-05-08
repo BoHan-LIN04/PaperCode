@@ -10,3 +10,4 @@ pyarrow>=15.0.0
 protobuf>=4.25
 tqdm>=4.66
 pytest>=8.3
+datasets

@@ -19,7 +19,7 @@ decoder_soft_prompt 是一个面向 decoder-only 大模型（如 Qwen、LLaMA、
 - 模型：Qwen/Qwen3-14B
 - 路线：same_model
 - 初始化：emotion_vectors
-- num_virtual_tokens=24
+- num_virtual_tokens=28  # 与emotion vector数量一致
 - learning_rate=0.005
 - max_steps=300
 - batch_size=1

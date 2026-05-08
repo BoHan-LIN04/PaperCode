@@ -7,17 +7,37 @@
 解决方案：
 我们提出了一种动态情绪向量注入机制。具体而言，在模型推理过程中，实时监控中间层（如 residual 或 hidden layer）的激活状态（在trigger point提取emotion vector 并怎么用的 这块是最重要的），探测并提取特定时刻（如第 y10 步）的情绪向量（emotion vector）。随后，将这些动态 emotion vector 以 e1,e2,… 的形式插入到 decoder 的输入序列中，从而直接影响和调控后续生成过程的方向。这种方法能够实现对生成文本风格或情感倾向的精细控制，突破了传统仅依赖静态 token embedding 的局限。
 
+
 异质拼接：这种空间不一致（异质拼接）是Prompt Tuning领域的普遍现象。许多工作（如P-Tuning v2、Prefix-Tuning等）指出，只要维度一致，模型通常能通过训练自动适应这种“异质拼接”。
 
 本工作通过动态情绪向量注入机制，工程上解决了空间不一致带来的实际问题：
 1. 支持直接将中间层激活（emotion vector）作为soft prompt注入输入序列，实现了灵活的情感风格调控。
-2. 结合L2归一化、可选线性投影等手段，进一步缓解了分布不一致。Ablation study 可对比“直接拼接/归一化/投影”三种方案的效果。
+2. 结合L2归一化、可选线性投影等手段，进一步缓解了分布不一致。
 3. 实验表明，模型在同模型、同hidden size设定下，能够有效适应并利用这类异质拼接向量，生成风格可控、情感一致的文本。
 
-因此，本方案不仅理论上可行，且在实际工程和实验中验证了其有效性，为后续可解释、可控的生成式模型研究提供了基础。
+【消融实验建议】
+为系统分析空间不一致对 soft prompt 效果的影响，建议配置如下三种方案进行消融实验：
 
+1. 直接拼接（same_model, 不归一化）：
+	- emotion_vector_route: same_model
+	- emotion_vector_l2_normalize: false
+
+2. 归一化（same_model, 归一化）：
+	- emotion_vector_route: same_model
+	- emotion_vector_l2_normalize: true
+
+3. 线性投影（projected, 可选归一化）：
+	- emotion_vector_route: projected
+	- emotion_vector_projection_path: <你的投影矩阵文件>
+	- emotion_vector_l2_normalize: true/false
+
+通过对比三种方案在 loss、BLEU、ROUGE、emotion_consistency 等指标上的表现，可全面评估空间对齐、归一化等工程手段对情感可控生成的影响。
+
+因此，本方案不仅理论上可行，且在实际工程和实验中验证了其有效性，为后续可解释、可控的生成式模型研究提供了基础。
 指标：accuracy/loss 别的指标 
 
+
+hidden state是哪个emotion(查表来做)
 情绪向量表格映射：
 为实现高效、可控且可解释的情绪注入，我们借鉴 Transformer Circuits Emotions https://transformer-circuits.pub/2026/emotions/index.html 的方法，系统性地构建了情绪类别与 emotion vector 的映射表。具体做法如下：
 1. 首先，基于带有明确情感标签的文本（如“高兴”“悲伤”“愤怒”等），在模型中采集中间层激活，计算每类情绪的平均向量，得到一组高质量的情绪向量（emotion vectors）。
@@ -38,11 +58,30 @@
 
 完整情绪类别与向量映射见附录。推理或训练阶段可通过查表快速检索目标情绪向量，实现 prompt 初始化、情感风格控制等多种应用。
 
+
+### 当前实现方案（静态emotion vector初始化）
+本实验采用“静态emotion vector初始化的软提示（soft prompt）微调”方案：
+1. 先用Qwen3-8B模型在有情感标签的数据上，提取中间层（如hidden state/residual）激活，计算每类的平均向量，得到28个emotion vectors（如 emotion_vectors_orth.npy）。
+2. 训练和推理时，将这28个emotion vectors作为soft prompt的初始化参数，直接拼接到输入序列前面（如28个虚拟token embedding，与emotion vector数量一致），整个流程中这些向量是固定的。
+3. 只训练soft prompt参数，主模型参数冻结。输入为标准的(input, target)对，训练目标为cross-entropy loss（loss/accuracy）。
+4. 评估以loss和accuracy为主，可做消融实验（如不同初始化、prompt长度、学习率等）。
+
+### 动态情绪向量注入机制实现思路（扩展方向）
+
+动态注入机制已实现如下：
+1. trigger point设计：推理/生成过程中设定“触发token”集合（如情感词、同义词等），遍历输入序列，遇到这些token即触发注入。
+2. emotion vector查表与批量生成：
+	- 自动从 emotion_vectors_orth.npy 和 emotion_names/metadata/config 批量生成 {类别: 向量} 查找表。
+	- 支持同义词、主情感词、扩展词批量生成 token2emotion 映射，自动获得所有 trigger_tokens。
+3. 注入方式：在 embedding 阶段，遇到 trigger_token 时，按查表结果将对应 emotion vector 以虚拟token embedding形式插入到序列指定位置（如该token后），支持 concat/加和/替换等多种注入策略。
+4. 训练/推理流程：模型 forward 前自动处理 embedding，支持动态 emotion vector 注入，无需修改主模型结构。
+5. 评估：除loss/accuracy外，支持情感一致性、风格可控性等指标。
+
+目前已实现静态和动态 emotion vector 注入机制，支持灵活配置和批量扩展，便于消融实验和实际应用。
+
 ## Datasets
 
 本工作及相关方法涉及多个经典的自然语言处理数据集，涵盖分类、生成、问答、对话等多种任务。以下简要介绍各典型数据集：
-
-此外，针对情感文本生成、风格迁移、可控生成等任务，推荐以下更贴合本工作的情感/风格相关数据集：
 
 此外，针对情感文本生成、风格迁移、可控生成等任务，推荐以下更贴合本工作的情感/风格相关数据集：
 

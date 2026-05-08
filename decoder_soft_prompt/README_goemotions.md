@@ -29,3 +29,31 @@ goemotions 数据集既可用于 soft prompt 微调训练，也常作为验证/�
 - 对比实验：可与 anthropic 自建数据、emotion24 等其他情感数据集对比，检验方法的通用性和鲁棒性。
 
 结论：推荐将 goemotions 作为主要验证/评测集，训练时可选用全部或部分数据，具体视实验设计而定。
+
+
+# 28类emotion vector实验流程
+
+如果你要用28类emotion vector进行训练和评测，推荐如下流程：
+
+1. 生成28类训练/验证/测试集（单标签）：
+	```bash
+	python data/generate_emotion28.py
+	```
+	这会在data/下生成 emotion28_train.jsonl、emotion28_eval.jsonl 和 emotion28_test.jsonl。
+
+2. 修改配置文件：
+	- configs/goemotions_soft_prompt.yaml 中：
+	  - `train_file` 改为 `data/emotion28_train.jsonl`
+	  - `eval_file` 改为 `data/emotion28_eval.jsonl`
+	  - `test_file`（如有）改为 `data/emotion28_test.jsonl`
+	  - `emotion_names` 改为 28类标签顺序
+	  - emotion_vectors_path/metadata_path 指向你的28类向量文件
+
+scp -r decoder_soft_prompt xinyix888@engr-liu01s.bluecat.arizona.edu:~/
+3. 训练/评测命令：
+	```bash
+	source ~/myenv/bin/activate
+	python -m src.decoder_soft_prompt_repro.cli train --config configs/goemotions_soft_prompt.yaml
+	```
+
+这样即可实现28类emotion vector的端到端训练和评测，标签、向量、数据严格对齐。
